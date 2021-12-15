@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+ {% block map %}
+   {{ mymap.js }}
+ {% endblock %}
+
+{% block title %}
+    Points de vente
+{% endblock %}
+
+{% block main %}
+
+<div id="map" class="container-fluid" style="margin-bottom: 50px">
+  {{ mymap.html }}
+</div>
+
+<div class="container-fluid" id="news" style="margin-bottom: 50px;">
+    <h1>Plusieurs choix de retraits pour vos légumes frais!</h1>
+    <p>Vous pouvez maintenant commander vos légumes en ligne et payer au retrait.</p>
+    <p>Plusieurs points d'achats et de retrait sont disponibles aux clients locaux.</p>
+    <br>
+    <div class="flex-container">
+
+            <div class="flex-item-left">
+            <p>Pour vos achats:</p>
+            <ul>
+                <li>Commande sur notre site et paiement au retrait</li>
+                <li>Commande par téléphone et paiement au retrait</li>
+                <li>Achats à la ferme directement (tout les jours)</li>
+                <li>Achats au marché de Saint-Dié: les mardis matins, cherchez-nous dans les stands de producteurs!</li>
+            </ul>
+            </div>
+            <div class="flex-item-right">
+                <p>Pour vos retraits, 3 points sont proposés:</p>
+                <ul>
+                    <li>A la ferme directement: vous pourrez rencontrer les producteurs et causer potager</li>
+                    <li>Au marché: donnez votre nom et repartez avec votre commande déjà toute prête</li>
+                    <li>Au Bistroquet (bar ouvert tout les jours sauf le dimanche): si vous avez loupé le marché, pas de souci, votre commande est derrière le comptoir!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" id="infographie">
+    <h2>Commander vos fruits et légumes en ligne !</h2>
+    <h5>Commander en ligne et récupérer vos légumes sur 3 points de retrait différents</h5>
+    <p>Commander dès maintenant en vous inscrivant sur notre site en haut à droite!</p>
+    <img src="/static/Marché.gif" alt="infographie" style="height: 480px;">
+</div>
+
+<div class="container-fluid" id="photo_elisa_légumes">
+    <h2>Des légumes bio pas piqués des hannetons !</h2>
+    <p> [Insérer le discours / arguments de vente]</p>
+    <p> [En fond, une photo de travail maraîcher]</p>
+</div>
+{% endblock %}

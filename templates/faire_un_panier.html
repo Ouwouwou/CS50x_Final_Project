@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Commander
+{% endblock %}
+{% block main %}
+<div class="container" id="presentation">
+    <p><strong>Bienvenue dans les Jardins aux Petits Oignons !</strong></p>
+    <p>A partir d'ici, vous pouvez commander des légumes en précisant le point d'achat / livraison souhaité.</p>
+    <p>Votre panier en cours apparaît ci-dessous, puis viennent les légumes frais disponibles à la commande. Sélectionnez parmi ces légumes pour garnir votre panier bio !</p>
+    <p>Les légumes changent avec les saisons et les récoltes, n'hésitez donc pas à régulièrement jeter un oeil sur les stocks ou nous contacter directement pour connaître les prochains arrivages.</p>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span><strong>{{ message }}</strong></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+{% if "cart" in session %}
+<div class="table-responsive-lg" id="cart">
+    <table class="table-hover">
+        <thead>
+            <tr>
+                <!--<th>Image</th>-->
+                <th>Nom</th>
+                <th style="width: 10%; text-align: left;">Quantité</th>
+                <th class="hidable">Prix unitaire</th>
+                <th style="width: 20%">Prix</th>
+                <th style="width: 5%;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in session["cart"].items() %}
+            {% set quantity = session["cart"][key]["quantity"] %}
+            {% set name = session["cart"][key]["name"] %}
+            {% set unit = session["cart"][key]["unit"] %}
+            {% set prix_total = session["cart"][key]["prix_total"] %}
+            {% set image = session["cart"][key]["image"] %}
+            {% set prix_unit = session["cart"][key]["prix_unit"] %}
+            {% set id = key %}
+            <tr>
+                <td class="in-middle" style="text-align: left;"><img class="img-thumbnail" src="/{{ image }}" alt="legume_thumbnail"> {{ name }}</td>
+                <td>{{ quantity }}</td>
+                <td class="hidable">€ {{ prix_unit }} / {{ unit }}</td>
+                <td>€ {{ prix_total }}</td>
+                <td>
+                    <a href="{{ url_for('.delete_product', code=session['cart'][key]['code']) }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                            <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+                        </svg>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="container-fluid" id="cart_bottom">
+        <div class="row">
+            <div class="col-lg-2">
+                <div class="box-left">
+                    <p>Prix total du panier :</p>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="box-left">
+                    <p><strong>€ {{ session["cart_total_price"] }}</strong></p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="box">
+                    <form method="post" action="/validate_cart" id="validate_cart" enctype="multipart/form-data">
+                        <select class="custom-select" id="delivery" name="delivery" form="validate_cart" style="margin-bottom: 5px" onchange="selectfunction()" required>
+                            <option value="" selected disabled>Choisissez un point de retrait</option>
+                            <option value="Marché">Au marché (Saint-Dié)</option>
+                            <option value="Ferme">A la ferme</option>
+                            <option value="Bistroquet">Au Bistroquet</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="box">
+                    <button class="btn btn-success" type="submit" id="validate_button" name="validate_button" form="validate_cart">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffff">
+                            <path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.55 13c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6zM7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                        Commander
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="box">
+                    <a id="empty_cart" href="{{ url_for('.empty_cart') }}">
+                        <button class="btn btn-warning" id="empty_cart">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+                            </svg>
+                        Vider
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-info" id="Marché">
+        <img src="/static/pickle_rick.png" style="float: left; height: 80px; vertical-align: middle">
+        <p>Le marché de Saint-Dié se tient le <strong>mardi matin</strong> de chaque semaine.</p>
+        <p>Toute commande non-récupérée à la fin du marché sera redirigée vers le Bistroquet.</p>
+    </div>
+    <div class="alert alert-info" id="Ferme">
+        <img src="/static/pickle_rick.png" style="float: left; height: 80px; vertical-align: middle">
+        <p>Le retrait à la ferme se fait chaque jour.</p>
+        <p>Comptez tout de même 24h avant de venir retirer votre commande afin de nous laisser le temps de la préparer.</p>
+
+    </div>
+    <div class="alert alert-info" id="Bistroquet">
+        <img src="/static/pickle_rick.png" style="float: left; height: 80px; vertical-align: middle">
+        <p>Le retrait au Bistroquet se fait chaque jour aux horaires d'ouverture du bar.</p>
+        <p>Comptez également 24h de préparation et d'acheminement.</p>
+    </div>
+    <script>
+        document.getElementById("Marché").style.display = "none";
+        document.getElementById("Ferme").style.display = "none";
+        document.getElementById("Bistroquet").style.display = "none";
+
+        function selectfunction() {
+            var x = document.getElementById('delivery').value;
+
+            if (x == "Marché") {
+                document.getElementById("Marché").style.display = "block";
+                document.getElementById("Ferme").style.display = "none";
+                document.getElementById("Bistroquet").style.display = "none";
+
+            }
+            else if (x == "Ferme") {
+                document.getElementById("Ferme").style.display = "block";
+                document.getElementById("Marché").style.display = "none";
+                document.getElementById("Bistroquet").style.display = "none";
+            }
+            else if (x == "Bistroquet") {
+                document.getElementById("Bistroquet").style.display = "block";
+                document.getElementById("Marché").style.display = "none";
+                document.getElementById("Ferme").style.display = "none";
+            }
+            else {
+                document.getElementById("Ferme").style.display = "none";
+                document.getElementById("Marché").style.display = "none";
+                document.getElementById("Ferme").style.display = "none";
+            }
+        }
+    </script>
+</div>
+{% else %}
+<div class="container-fluid">
+    <p><strong>Votre panier est vide.</strong></p>
+</div>
+{% endif %}
+<br>
+<div class="container-fluid" id="legumes-grid">
+    <h2><strong>Légumes</strong></h2>
+    {% for online_veg_row in online_vegs|batch(3) %}
+    <div class="row">
+        {% for online_veg in online_veg_row %}
+        <div class="legume_card">
+            <form method="post" action="/choisir" enctype="multipart/form-data">
+                <img src="/{{ online_veg.0 }}" alt="image_légume" style="width:100%">
+                <h2>{{ online_veg.1 }}</h2>
+                <input type="hidden" id="name_legume" name="name_legume" value="{{ online_veg.1 }}">
+                <input type="hidden" id="id_legume" name="id_legume" value="{{ online_veg.5 }}">
+                <p class="price">€ {{ online_veg.3 }} / {{ online_veg.2 }}</p>
+                {% if online_veg.2 == "botte" or online_veg.2 == "piece" %}
+                <p><input type="number" id="quantity_legume" name="quantity_legume" step="1" min="0"required> {{ online_veg.2 }}</p>
+                {% else %}
+                <p><input type="number" id="quantity_legume" name="quantity_legume" step="0.1" min="0" required> {{ online_veg.2 }}</p>
+                {% endif %}
+                <p><button class="btn btn-primary" type="submit" name="submit_button" value="add_legume">Ajouter</button></p>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

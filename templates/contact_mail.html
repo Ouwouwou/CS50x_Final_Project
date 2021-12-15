@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <h3>Hello du site des Petits Oignons</h3>
+            <p>Quelqu'un a rempli un formulaire de contct avec un message sur le site.</p>
+            <p>Ci-dessous, les infos et le message renseigné.</p>
+        </div>
+        <div class="container-fluid" id="contact_mail">
+            <div class="row">
+                <p><strong>Nom et prénom : {{ nom }} {{ prenom }}</strong></p>
+            </div>
+            <div class="row">
+                <p><strong>Téléphone : {{ phone }}</strong></p>
+            </div>
+            <div class="row">
+                <p><strong>Email : {{ email }}</strong></p>
+            </div>
+            <div class="row">
+                <p><strong>Contenu du message :</strong></p>
+                <p>{{ message_area }}</p>
+            </div>
+        </div>
+    </body>
+</html>

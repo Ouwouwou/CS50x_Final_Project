@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <h3>Bonjour,</h3>
+            <p>Merci d'avoir commandé sur le site aux Petits Oignons !</p>
+            <p>Votre commande est en cours de préparation et sera bientôt disponible au point de retrait choisi: <strong>{{ selling_point }}</strong>.</p>
+            <p>Pour connaître les nouveaux arrivages, n'hésitez pas à visiter régulièrement le site web où les légumes disponibles seront mis en ligne.</p>
+            <p>Les Petits Oignons honoreront les commandes dans la limite des stocks disponibles seulement.</p>
+            <p>Ci-dessous un récapitulatif de votre commande:</p>
+        </div>
+        <div class="container-fluid" id="cart_bottom">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div>
+                        <p><strong>Utilisateur : {{ session.username }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div>
+                        <p><strong>Prix total à payer au retrait: € {{ session.cart_total_price }}</strong></p>
+                    </div>
+                </div>
+            </div>
+            <ul>
+            {% for veg_commande in final_vegs_commande %}
+                <li>
+                    <p>
+                        <i>{{ veg_commande.0 }} x {{ veg_commande.1 }}</i>
+                    </p>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="container-fluid">
+            <p>
+                Si l'un des éléments de votre commande est erronée, n'hésitez pas à nous contacter pour rectification.
+            </p>
+            <p>
+                A bientôt !
+            </p>
+        </div>
+    </body>
+</html>

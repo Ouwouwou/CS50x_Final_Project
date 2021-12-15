@@ -1,0 +1,171 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}
+    Admin Commandes
+{% endblock %}
+
+{% block main %}
+<div class="container-fluid" id="presentation">
+    <h2>Bienvenue dans la zone de contrôle des commandes !</h2>
+    <p>A partir d'ici, tu peux <i>Gérer les commandes</i>.</p>
+    <p>Les commandes en attente sont listés ici et tu peux changer leurs statuts de "En attente" à "Validée" une fois que tu les a préparées</p>
+    <p>Une fois les commandes bien retirées / payées par les clients, tu peux les passer en statut "Archivée" pour ne plus les voir.</p>
+    <br>
+    <p>Avant les marchés ou à n'importe quel moment, tu peux télécharger un Excel des commandes passées les 7 derniers jours pour t'aider à l'organisation.</p>
+    <p>Essaie juste de ne pas télécharger plusieurs fois par jour le Excel. Soit ça ne marchera pas, soit ça mettra le bazar dans les fichiers serveurs.</p>
+</div>
+<br>
+<div class="container-fluid">
+    <div class="row">
+        <form method="post" action="/download_LastWeek" id="download_LastWeek" enctype="multipart/form-data"></form>
+        <button class="btn btn-primary btn-block" type="submit" id="download_button" name="download_button" form="download_LastWeek">
+            <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 30 30" height="30px" viewBox="0 0 30 30" width="30px" fill="#fff">
+                <g>
+                    <rect fill="none" height="30" width="30"/></g><g>
+                    <path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z"/>
+                </g>
+            </svg>
+            Télécharger commandes de la semaine</button>
+    </div>
+    <div class="row">
+        <button class="btn btn-primary btn-block" type="submit" id="commandes_update_button" name="commandes_update_button" form="commandes_update">
+            <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 30 30" width="30px" fill="#fff">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/>
+            </svg>
+            Mettre à jour les statuts
+        </button>
+    </div>
+</div>
+<br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span><strong>{{ message }}</strong></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+<br>
+<div class="container-fluid" id="commandes_en_attente">
+    <h2>Commandes en attente de validation</h2>
+    <form method="post" action="/commandes" id="commandes_update" name="commandes_update" enctype="multipart/form-data"></form>
+    {% if en_attente != None %}
+    {% for commande in en_attente %}
+    {% set id = commande["id"] %}
+    {% set time = commande["time"] %}
+    {% set name = commande["name"] %}
+    {% set status = commande["status"] %}
+    {% set selling_point = commande["selling_point"] %}
+    {% set total_price = commande["total_price"] %}
+    {% set legumes = commande["legumes"] %}
+        <div class="commande_en_attente">
+            <div class="accordion" id="accordionExample">
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse{{ id }}" aria-expanded="false" aria-controls="collapseTwo">
+                                <div class="row">
+                                    <div class="col">
+                                        <strong>#{{ id }}</strong>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ebbc03">
+                                            <path d="M0 0h24v24H0V0z" fill="none"/>
+                                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="col">
+                                        {{ name }}
+                                    </div>
+                                    <div class="col">
+                                        {{ selling_point }}
+                                    </div>
+                                    <div class="col">
+                                        € {{ total_price }}
+                                    </div>
+                                    <div class="col">
+                                        <select class="custom-select" id="status_update" name="status_update" form="commandes_update" style="margin-bottom: 5px" required>
+                                            <option value="{{ status }}" selected>{{ status }}</option>
+                                            <option value="Validée">Validée</option>
+                                            <option value="Archivée">Archivée</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="commande_id" id="commande_id" value="{{ id }}" form="commandes_update">
+                                </div>
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="collapse{{ id }}" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                        <div class="card-body">
+                            {% for legume in legumes %}
+                            <div class="row">
+                                <div class="col">
+                                    <p>{{ legume.veg_name }} </p>
+                                </div>
+                                <div class="col">
+                                    <p>{{ legume.veg_qty }} {{ legume.veg_unit }}</p>
+                                </div>
+                                <div class="col">
+                                    <p>€ {{ legume.veg_price }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <br>
+    {% else %}
+    <p>Aucune commande n'est en attente de validation.</p>
+    {% endif %}
+</div>
+<br>
+<div class="container-fluid" id="commandes_validees">
+    <h2>Commandes validées</h2>
+    {% if commandes_validees %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Client</th>
+                    <th scope="col">Point de retrait</th>
+                    <th scope="col">Prix</th>
+                    <th scope="col">Statut</th>
+                </tr>
+        {% for commande_validee in commandes_validees %}
+        {% set id = commande_validee["id"] %}
+        {% set time = commande_validee["time"] %}
+        {% set name = commande_validee["name"] %}
+        {% set status = commande_validee["status"] %}
+        {% set selling_point = commande_validee["selling_point"] %}
+        {% set total_price = commande_validee["total_price"] %}
+                <tr>
+                    <td>
+                        {{ id }}
+                        <input type="hidden" name="commande_id" id="commande_id" value="{{ id }}" form="commandes_update">
+                    </td>
+                    <td>{{ name }}</td>
+                    <td>{{ selling_point }}</td>
+                    <td>€ {{ total_price }}</td>
+                    <td>
+                        <select class="custom-select" id="status_update" name="status_update" form="commandes_update" style="margin-bottom: 5px">
+                            <option value="En attente">En attente</option>
+                            <option value="{{ status}}" selected>{{ status }}</option>
+                            <option value="Archivée">Archivée</option>
+                        </select>
+                    </td>
+                </tr>
+        {% endfor %}
+            </table>
+          </div>
+    </form>
+    <br>
+    {% else %}
+    <p>Aucune commande n'est en attente de validation.</p>
+    {% endif %}
+{% endblock %}

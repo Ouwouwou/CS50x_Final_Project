@@ -1,0 +1,153 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}
+    Légumes
+{% endblock %}
+
+{% block main %}
+<div class="container" id="presentation_legumes">
+    <h2>Bienvenue dans la partie Légumes !</h2>
+    <br>
+    <p>A partir d'ici, tu peux <i>Gérer les légumes</i>.</p>
+    <p>Ci-dessous un récapitulatif des légumes disponibles dans la base de données.</p>
+    <p>Tu peux également créer un nouveau légume pour le mettre en ligne, ou supprimer des légumes déjà existant, si tu le souhaites.</p>
+    <p>N'oublie pas de bien renseigner les champs "Unité", et "Prix unitaire".</p>
+    <p>Mettre une image, c'est mieux. Assure-toi qu'elle ne soit pas trop grosse ou trop pixelisée. Le mieux est encore sans arrière-plan. </p>
+    <p>Si ça ne marche pas, contacte le technicien.</p>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span><strong>{{ message }}</strong></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="container-fluid" id="new_legume_tab">
+    <form method="post" action="/legumes" id="new_legume" enctype="multipart/form-data">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="img_legume">Image</label>
+            <div class="col-sm-10">
+                <input type="file" name="img_legume" autocomplete="off" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="name_legume">Nom</label>
+            <div class="col-sm-10">
+                <input type="text" name="name_legume" autocomplete="off" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="prix_unit_legume">Prix </label>
+            <div class="col-sm-10">
+                <input type="number" name="prix_unit_legume" step="0.01" min="0" autocomplete="off" required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="unit">Unité</label>
+            <div class="col-sm-10">
+                <select class="custom-select" id="unit" name="unit_legume" form="new_legume" required>
+                    <option selected disabled></option>
+                    <option value="kg">Kilogrammes</option>
+                    <option value="piece">Pièce</option>
+                    <option value="botte">Botte</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="statut_legume">Statut</label>
+            <div class="col-sm-10">
+                <select class="custom-select"id="statut" name="statut_legume" form="new_legume">
+                    <option selected disabled></option>
+                    <option value="online">En ligne</option>
+                    <option value="offline">Hors ligne</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    <br>
+    <div>
+        <button class="btn btn-primary" type="submit" name="submit_button" value="submit_new_legume" form="new_legume">Créer un gros légume</button>
+    </div>
+</div>
+<br>
+<div>
+    <button class="btn btn-primary" type="submit" name="submit_button" value="update_legumes" form="update_legume">Mettre à jour les légumes</button>
+</div>
+<div class="container" id="legumes_online">
+    <form method="post" action="/legumes" id="update_legume" enctype="multipart/form-data">
+    <h2>Légumes en ligne</h2>
+    {% if not online_vegs %}
+    <p>Aucun légume en ligne !</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <!--<th>Image</th>-->
+                    <th>Nom</th>
+                    <th>Prix Unitaire</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for online_veg in online_vegs %}
+                <tr>
+                    <td><input type="text" name="name_legume" form="update_legume" value="{{ online_veg.1 }}" disabled></td>
+                    <td>
+                        € <input type="number" name="prix_unit_legume" step="0.01" autocomplete="off" form="update_legume" value='{{ online_veg.3 }}' required> / {{ online_veg.2 }}
+                    </td>
+                    <td>
+                        <select id="statut" name="statut_legume" form="update_legume">
+                            <option value="{{ online_veg.4 }}" selected>En ligne</option>
+                            <option value="offline">Hors ligne</option>
+                        </select>
+                    </td>
+                    <input type="hidden" name="id_legume" form="update_legume" value="{{ online_veg.5 }}">
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+<div class="container" id="legumes_offline">
+    <h2>Légumes hors ligne</h2>
+    {% if not offline_vegs %}
+    <p>Tous les légumes sont en ligne !</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <!--<th>Image</th>-->
+                    <th>Nom</th>
+                    <th>Prix Unitaire</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offline_veg in offline_vegs %}
+                <tr>
+                    <td><input type="text" id="name_legume" name="name_legume" form="update_legume" value="{{ offline_veg.0 }}" disabled></td>
+                    <td>
+                        € <input type="number" name="prix_unit_legume" step="0.01" autocomplete="off" form="update_legume" value='{{ offline_veg.2 }}' required> / {{ offline_veg.1 }}
+                    </td>
+                    <td>
+                        <select id="statut" name="statut_legume" form="update_legume">
+                            <option value="online">En ligne</option>
+                            <option value="{{ offline_veg.3 }}" selected>Hors ligne</option>
+                        </select>
+                    </td>
+                    <input type="hidden" name="id_legume" form="update_legume" value="{{ offline_veg.4 }}">
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    </form>
+</div>
+{% endblock %}

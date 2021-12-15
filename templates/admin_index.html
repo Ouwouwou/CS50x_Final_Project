@@ -1,0 +1,98 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}
+    Admin
+{% endblock %}
+
+{% block main %}
+<div class="container-fluid" id="presentation">
+    <h2>Bienvenue dans la zone administrateur !</h2>
+    <p>A partir d'ici, tu peux <i>Gérer les légumes</i> et <i>Gérer les commandes</i>.</p>
+    <p>Ci-dessous, un résumé des dernières commandes passées que tu n'as pas encore validé, et un récapitulatif des légumes disponible aux clients</p>
+</div>
+<br>
+<div class="container-fluid" id="commandes_en_cours">
+    <h2>Tableau des commandes non-validées</h2>
+    {% if not en_attente %}
+    <p>Aucune commande en attente.</p>
+    {% else %}
+    {% for commande in en_attente %}
+    {% set id = commande["id"] %}
+    {% set name = commande["name"] %}
+    {% set time = commande["time"] %}
+    {% set selling_point = commande["selling_point"] %}
+    {% set total_price = commande["total_price"] %}
+    {% set legumes = commande["legumes"] %}
+    <div class="accordion" id="accordionExample">
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse{{ id }}" aria-expanded="false" aria-controls="collapseTwo">
+                        <div class="row">
+                            <div class="col">
+                                {{ name }}
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ebbc03">
+                                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                </svg>
+                            </div>
+                            <div class="col">
+                                {{ selling_point }}
+                            </div>
+                            <div class="col">
+                                € {{ total_price }}
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+            </div>
+            <div id="collapse{{ id }}" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                <div class="card-body">
+                    {% for legume in legumes %}
+                    <div class="row">
+                        <div class="col">
+                            <p>{{ legume.veg_name }} </p>
+                        </div>
+                        <div class="col">
+                            <p>{{ legume.veg_qty }} {{ legume.veg_unit }}</p>
+                        </div>
+                        <div class="col">
+                            <p><strong>€ {{ legume.veg_price }}</strong></p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+<br>
+<div class="container-fluid" id="legumes_online">
+    <h2>Légumes en ligne</h2>
+    {% if not online_vegs %}
+    <p>Aucun légume en ligne !</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <!--<th>Image</th>-->
+                    <th>Nom</th>
+                    <th>Prix Unitaire</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for online_veg in online_vegs %}
+                <tr>
+                    <td>{{ online_veg.1 }}</td>
+                    <td>€ {{ online_veg.3 }} / {{ online_veg.2 }}</td>
+                    <td>{{ online_veg.4 }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}
