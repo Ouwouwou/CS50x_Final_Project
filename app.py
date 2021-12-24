@@ -71,7 +71,7 @@ redis = redis.from_url(redis_url)
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+app.config['SESSION_REDIS'] = redis
 server_session = Session(app)
 
 @app.route("/")
