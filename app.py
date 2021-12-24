@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from flask_googlemaps import GoogleMaps, Map
 
-from helpers import allowed_file, eur, login_required, get_pending_orders, get_pending_in_date_range, get_online_vegs, get_offline_vegs
+from helpers import allowed_file, eur, login_required, admin_required, get_pending_orders, get_pending_in_date_range, get_online_vegs, get_offline_vegs
 
 # Set global variables for source and destination folders + needed env variables
 UPLOAD_FOLDER = 'static/uploads/'
@@ -76,19 +76,17 @@ def index():
 
 @app.route("/admin")
 @login_required
+@admin_required
 def admin():
-    if session["username"] == "Elisadmin":
+    online_vegs = get_online_vegs()
 
-        online_vegs = get_online_vegs()
+    en_attente = get_pending_orders()
 
-        en_attente = get_pending_orders()
-
-        return render_template("admin_index.html", online_vegs=online_vegs, en_attente=en_attente)
-    else:
-        return redirect("/")
+    return render_template("admin_index.html", online_vegs=online_vegs, en_attente=en_attente)
 
 @app.route("/download_LastWeek", methods=["POST"])
 @login_required
+@admin_required
 def download_LastWeek():
     # Get today's date at time format
     time = date.today()
@@ -207,7 +205,6 @@ def logout():
 @app.route ("/inscription", methods=["GET", "POST"])
 def inscription():
     """Register user"""
-
     if request.method == "POST":
         # Ensure username was submitted
         username = request.form.get("username")
@@ -221,7 +218,7 @@ def inscription():
         # Ensure password is correctly confirmed
         if password != password_confirmation:
             flash("Le mot de passe et sa confirmation ne correspondent pas", category='warning')
-            return ("inscription.html")
+            return render_template("inscription.html")
 
         #Set database to execute queries
         db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
@@ -232,13 +229,13 @@ def inscription():
         namecheck = cur.fetchone()
         if namecheck != None:
             flash("Ce nom d'utilisateur est déjà pris", category='warning')
-            return ("inscription.html")
+            return render_template("inscription.html")
 
         cur.execute("SELECT * FROM users WHERE email = ?", [request.form.get("email")])
         mailcheck = cur.fetchone()
         if mailcheck != None:
             flash("Cette adresse email est déjà associé à un compte", category='warning')
-            return ("inscription.html")
+            return render_template("inscription.html")
 
         # validate_email check
         is_valid = validate_email(
@@ -327,94 +324,92 @@ def history():
 
 @app.route("/legumes", methods=["GET", "POST"])
 @login_required
+@admin_required
 def legumes():
-    if session["username"] == "Elisadmin":
-        if request.method == "POST":
-            if request.form['submit_button'] == 'submit_new_legume':
-            # Following dozen of line taken from Flask 2.0 tutorial - https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
-            # Perform tests if an img has been submitted, screen for format and upload the img to UPLOADS in static
-                if not request.files['img_legume']:
-                    flash('No file part')
-                    print("Pas de fichier détecté")
-                img = request.files['img_legume']
-                # If the user does not select a file, the browser submits an
-                # empty file without a filename.
-                if img.filename == '':
-                    flash('No selected file')
-                    print("Pas de fichier sélectionné")
-                if img and allowed_file(img.filename):
-                    filename = secure_filename(img.filename)
-                    img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if request.method == "POST":
+        if request.form['submit_button'] == 'submit_new_legume':
+        # Following dozen of line taken from Flask 2.0 tutorial - https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+        # Perform tests if an img has been submitted, screen for format and upload the img to UPLOADS in static
+            if not request.files['img_legume']:
+                flash('No file part')
+                print("Pas de fichier détecté")
+            img = request.files['img_legume']
+            # If the user does not select a file, the browser submits an
+            # empty file without a filename.
+            if img.filename == '':
+                flash('No selected file')
+                print("Pas de fichier sélectionné")
+            if img and allowed_file(img.filename):
+                filename = secure_filename(img.filename)
+                img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-                # Convert the img to binary data
-                legume_blob = str(img_path)
+            # Convert the img to binary data
+            legume_blob = str(img_path)
 
-                # Check for no doubles
-                legume_name = request.form.get("name_legume")
+            # Check for no doubles
+            legume_name = request.form.get("name_legume")
 
-                db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
-                cur = db.cursor()
+            db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
+            cur = db.cursor()
 
-                cur.execute("SELECT * FROM legumes WHERE name = ?", [legume_name,])
-                namecheck = cur.fetchone()
-                if namecheck != None:
+            cur.execute("SELECT * FROM legumes WHERE name = ?", [legume_name,])
+            namecheck = cur.fetchone()
+            if namecheck != None:
 
-                    online_vegs = get_online_vegs()
-                    offline_vegs = get_offline_vegs()
+                online_vegs = get_online_vegs()
+                offline_vegs = get_offline_vegs()
 
-                    flash("Un légume avec ce nom là est déjà enregistré !", category='warning')
-                    return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
+                flash("Un légume avec ce nom là est déjà enregistré !", category='warning')
+                return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
 
-                # Get all the other info and put all of that in a tuple
-                legume_unit = request.form.get("unit_legume")
-                legume_unit_price = float(request.form.get("prix_unit_legume"))
-                legume_status = request.form.get("statut_legume")
+            # Get all the other info and put all of that in a tuple
+            legume_unit = request.form.get("unit_legume")
+            legume_unit_price = float(request.form.get("prix_unit_legume"))
+            legume_status = request.form.get("statut_legume")
 
-                new_legume = (legume_blob, legume_name, legume_unit, legume_unit_price, legume_status)
+            new_legume = (legume_blob, legume_name, legume_unit, legume_unit_price, legume_status)
 
-                cur.execute("INSERT INTO legumes (image, name, unit, prix_unit, status) VALUES (?, ?, ?, ?, ?)", new_legume)
+            cur.execute("INSERT INTO legumes (image, name, unit, prix_unit, status) VALUES (?, ?, ?, ?, ?)", new_legume)
+            db.commit()
+
+            # Kill cursor and connection to db
+            cur.close()
+            db.close()
+
+            online_vegs = get_online_vegs()
+            offline_vegs = get_offline_vegs()
+
+            flash("Nouveau légume bien enregistré !", category='success')
+            return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
+
+        elif request.form['submit_button'] == "update_legumes":
+            legume_2_update_id = request.form.getlist("id_legume")
+            legume_2_update_prix = request.form.getlist("prix_unit_legume")
+            legume_2_update_status = request.form.getlist("statut_legume")
+            legumes_2_update = tuple((zip(legume_2_update_prix, legume_2_update_status, legume_2_update_id)))
+
+            # Connect to db
+            db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
+            cur = db.cursor()
+
+            # Query the database for update
+            for index, item in enumerate(legumes_2_update):
+                cur.execute("UPDATE legumes SET prix_unit = ?, status = ? WHERE id = ?", legumes_2_update[index])
                 db.commit()
+            # Kill cursor and connection to db
+            cur.close()
+            db.close()
 
-                # Kill cursor and connection to db
-                cur.close()
-                db.close()
-
-                online_vegs = get_online_vegs()
-                offline_vegs = get_offline_vegs()
-
-                flash("Nouveau légume bien enregistré !", category='success')
-                return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
-
-            elif request.form['submit_button'] == "update_legumes":
-                legume_2_update_id = request.form.getlist("id_legume")
-                legume_2_update_prix = request.form.getlist("prix_unit_legume")
-                legume_2_update_status = request.form.getlist("statut_legume")
-                legumes_2_update = tuple((zip(legume_2_update_prix, legume_2_update_status, legume_2_update_id)))
-
-                # Connect to db
-                db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
-                cur = db.cursor()
-
-                # Query the database for update
-                for index, item in enumerate(legumes_2_update):
-                    cur.execute("UPDATE legumes SET prix_unit = ?, status = ? WHERE id = ?", legumes_2_update[index])
-                    db.commit()
-                # Kill cursor and connection to db
-                cur.close()
-                db.close()
-
-                online_vegs = get_online_vegs()
-                offline_vegs = get_offline_vegs()
-
-                return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
-        else:
             online_vegs = get_online_vegs()
             offline_vegs = get_offline_vegs()
 
             return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
     else:
-        return render_template("acces_limite.html")
+        online_vegs = get_online_vegs()
+        offline_vegs = get_offline_vegs()
+
+        return render_template("legumes.html", online_vegs=online_vegs, offline_vegs=offline_vegs)
 
 @app.route("/choisir", methods=["GET", "POST"])
 @login_required
@@ -620,6 +615,7 @@ def validate_cart():
 
 @app.route("/commandes", methods=["GET", "POST"])
 @login_required
+@admin_required
 def commandes():
     if request.method == "POST":
         # Get the updated status and id of related orders
@@ -646,22 +642,15 @@ def commandes():
         return render_template("commandes_control.html", **locals())
 
     else:
-        if session["username"] != "Elisadmin" or not "username" in session:
-            online_vegs = get_online_vegs()
+        en_attente = get_pending_orders()
 
-            flash("Oups, une manipulation inattendue vous a ramenée ici à partir d'une page où votre profil utilisateur ne vous autorisait pas à être", category='warning')
-            return render_template("faire_un_panier.html", online_vegs=online_vegs)
+        db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
+        db.row_factory = sqlite3.Row
+        cur = db.cursor()
 
-        else:
-            en_attente = get_pending_orders()
+        commandes_validees = cur.execute("""SELECT id, user_id, status, strftime("%d/%m/%Y", time) AS time, selling_point, total_price FROM commandes WHERE status = "Validée" ORDER BY time ASC""").fetchall()
 
-            db = sqlite3.connect("ptits_oignons.db", check_same_thread=False)
-            db.row_factory = sqlite3.Row
-            cur = db.cursor()
-
-            commandes_validees = cur.execute("""SELECT id, user_id, status, strftime("%d/%m/%Y", time) AS time, selling_point, total_price FROM commandes WHERE status = "Validée" ORDER BY time ASC""").fetchall()
-
-            return render_template("commandes_control.html", **locals())
+        return render_template("commandes_control.html", **locals())
 
 @app.route("/vente")
 def vente():

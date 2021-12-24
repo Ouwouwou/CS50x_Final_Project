@@ -21,6 +21,14 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") != "Elisadmin":
+            return redirect("/")
+        return f(*args, **kwargs)
+    return decorated_function
+
 def eur(value):
     """Format value as USD."""
     return f"€{value:,.2f}"
