@@ -65,6 +65,9 @@ def after_request(response):
 app.jinja_env.filters["eur"] = eur
 
 # Configure session to use filesystem (instead of signed cookies)
+# Redis To Go add-on
+redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+redis = redis.from_url(redis_url)
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
