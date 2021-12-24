@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 import time
-from tempfile import mkdtemp
+import redis
 from datetime import date, timedelta
 
 import xlsxwriter
@@ -65,10 +65,11 @@ def after_request(response):
 app.jinja_env.filters["eur"] = eur
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+server_session = Session(app)
 
 @app.route("/")
 def index():
