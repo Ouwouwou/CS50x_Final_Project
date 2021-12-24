@@ -11,7 +11,6 @@ flask-googlemaps==0.4.1
 Flask-Mail==0.9.1
 Flask-Session==0.4.0
 ghp-import==2.0.2
-gunicorn==20.1.0
 htmlmin==0.1.12
 idna==3.2
 importlib-metadata==4.8.2
