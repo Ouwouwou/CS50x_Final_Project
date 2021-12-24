@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 import time
-import redis
+from tempfile import mkdtemp
 from datetime import date, timedelta
 
 import xlsxwriter
@@ -27,6 +27,7 @@ MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 GOOGLEMAPS_KEY = os.environ.get('GOOGLEMAPS_KEY')
 # Configure app
 app = Flask(__name__, template_folder='templates')
+app.secret_key = "dev
 
 # Ensure all the template are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -64,12 +65,12 @@ def after_request(response):
 app.jinja_env.filters["eur"] = eur
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_TYPE"] = "redis"
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
-
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+"
 
 @app.route("/")
 def index():
