@@ -27,7 +27,7 @@ MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 GOOGLEMAPS_KEY = os.environ.get('GOOGLEMAPS_KEY')
 # Configure app
 app = Flask(__name__, template_folder='templates')
-app.secret_key = "dev
+app.secret_key = "dev"
 
 # Ensure all the template are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
