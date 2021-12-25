@@ -7,7 +7,7 @@ colorama==0.4.4
 dnspython==2.1.0
 filelock==3.3.1
 Flask==2.0.2
-flask-googlemaps==0.4.1
+flask-googlemaps==0.4.1.1
 Flask-Mail==0.9.1
 Flask-Session==0.4.0
 ghp-import==2.0.2
